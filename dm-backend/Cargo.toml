@@ -1,0 +1,15 @@
+[package]
+name = "dm-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.89"
+axum = "0.7.7"
+chrono = { version = "0.4.38", features = ["serde"] }
+rust_decimal = "1.36.0"
+serde = { version = "1.0.210", features = ["derive"] }
+sqlx = { version = "0.8.2", features = ["chrono", "postgres", "runtime-tokio", "rust_decimal", "tls-rustls-ring"] }
+tokio = { version = "1.40.0", features = ["rt-multi-thread", "net", "macros"] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
