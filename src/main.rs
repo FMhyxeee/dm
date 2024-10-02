@@ -1,5 +1,8 @@
-use axum::{routing::get, Router};
-use dm::{index, list_all};
+use axum::{
+    routing::{delete, get, post, put},
+    Router,
+};
+use dm::{create, delete_one, index, list_all, update};
 use tokio::net::TcpListener;
 use tracing::info;
 
@@ -21,6 +24,9 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(index))
         .route("/list_all", get(list_all))
+        .route("/create", post(create))
+        .route("/update", put(update))
+        .route("/delete", delete(delete_one))
         .with_state(pool);
 
     axum::serve(listener, app).await.unwrap();

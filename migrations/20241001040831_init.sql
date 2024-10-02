@@ -1,7 +1,7 @@
 -- Add migration script here
 
 CREATE TABLE IF NOT EXISTS test_table (
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255) NOT NULL,
     age INT NOT NULL,
     salary DECIMAL(10, 2) NOT NULL,

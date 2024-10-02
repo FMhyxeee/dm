@@ -1,0 +1,41 @@
+### 
+
+GET http://localhost:3000/
+
+### TEST LIST
+
+GET http://localhost:3000/list_all
+
+### TEST CREATE
+
+POST http://localhost:3000/create
+Content-Type: application/json
+
+{
+    "name": "test",
+    "age": 20,
+    "salary": 1000
+}
+
+### test update
+PUT http://localhost:3000/update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "name": "test",
+    "age": 20,
+    "salary": 1000
+}
+
+### test delete
+
+DELETE http://localhost:3000/delete
+Content-Type: application/json
+
+{
+    "id": 1
+}
+
+
+
