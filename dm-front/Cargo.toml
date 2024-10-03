@@ -1,7 +1,16 @@
 [package]
 name = "dm-front"
 version = "0.1.0"
+authors = ["hyx <1179570770@qq.com>"]
 edition = "2021"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [dependencies]
-dioxus = "0.5.6"
+
+dioxus = { version = "0.5", features = ["web", "router"] }
+
+# Debug
+dioxus-logger = "0.5.1"
+reqwest = { version = "0.12.8", features = ["json"] }
+serde_json = "1.0.128"

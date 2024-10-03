@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "dm-backend", "dm-front",
+    "dm-backend", "dm-front"
 ]
 resolver = "2"
 
