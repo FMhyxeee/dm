@@ -1,6 +1,14 @@
 [workspace]
 members = [
-    "dm-backend", "dm-front"
+    "dm-backend", "dm-common", "dm-front"
 ]
 resolver = "2"
 
+[workspace.dependencies]
+serde = { version = "1.0.210", features = ["derive"] }
+sqlx = { version = "0.8.2", features = ["chrono", "postgres", "runtime-tokio", "rust_decimal", "tls-rustls-ring"] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+chrono = { version = "0.4.38", features = ["serde"] }
+rust_decimal = "1.36.0"
+axum = "0.7.7"

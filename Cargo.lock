@@ -954,6 +954,7 @@ dependencies = [
  "anyhow",
  "axum",
  "chrono",
+ "dm-common",
  "rust_decimal",
  "serde",
  "sqlx",
@@ -961,6 +962,18 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "dm-common"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "chrono",
+ "rust_decimal",
+ "serde",
+ "sqlx",
+ "thiserror",
 ]
 
 [[package]]

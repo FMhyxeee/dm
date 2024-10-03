@@ -1,42 +1,42 @@
 use axum::extract::State;
 use axum::Json;
 
-use crate::{TestTable, TestTableCreate, TestTableDelete, TestTableUpdate};
+use dm_common::{AppError, UserDetail, UserDetailCreate, UserDetailDelete, UserDetailUpdate};
 
 pub async fn index() -> &'static str {
     "Hello, world!"
 }
 
-pub async fn list_all(State(pool): State<sqlx::PgPool>) -> Json<Vec<TestTable>> {
-    let lists = TestTable::list_all(&pool).await.unwrap();
+pub async fn list_all(State(pool): State<sqlx::PgPool>) -> Json<Vec<UserDetail>> {
+    let lists = UserDetail::list_all(&pool).await.unwrap();
     Json::from(lists)
 }
 
 pub async fn create(
     State(pool): State<sqlx::PgPool>,
-    Json(test_table_create): Json<TestTableCreate>,
-) -> Json<TestTable> {
-    let new_record = TestTable::create(
+    Json(user_detail_create): Json<UserDetailCreate>,
+) -> Result<Json<UserDetail>, AppError> {
+    let new_record = UserDetail::create(
         &pool,
-        test_table_create.name,
-        test_table_create.age,
-        test_table_create.salary,
+        user_detail_create.name,
+        user_detail_create.age,
+        user_detail_create.salary,
     )
     .await
     .unwrap();
-    Json::from(new_record)
+    Ok(Json::from(new_record))
 }
 
 pub async fn update(
     State(pool): State<sqlx::PgPool>,
-    Json(test_table_update): Json<TestTableUpdate>,
-) -> Json<TestTable> {
-    let updated_record = TestTable::update(
+    Json(user_detail_update): Json<UserDetailUpdate>,
+) -> Json<UserDetail> {
+    let updated_record = UserDetail::update(
         &pool,
-        test_table_update.id,
-        test_table_update.name,
-        test_table_update.age,
-        test_table_update.salary,
+        user_detail_update.id,
+        user_detail_update.name,
+        user_detail_update.age,
+        user_detail_update.salary,
     )
     .await
     .unwrap();
@@ -45,9 +45,9 @@ pub async fn update(
 
 pub async fn delete_one(
     State(pool): State<sqlx::PgPool>,
-    Json(test_table_delete): Json<TestTableDelete>,
-) -> Json<TestTable> {
-    let deleted_record = TestTable::delete_one(&pool, test_table_delete.id)
+    Json(user_detail_delete): Json<UserDetailDelete>,
+) -> Json<UserDetail> {
+    let deleted_record = UserDetail::delete_one(&pool, user_detail_delete.id)
         .await
         .unwrap();
     Json::from(deleted_record)

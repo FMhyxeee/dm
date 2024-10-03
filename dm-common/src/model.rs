@@ -1,10 +1,12 @@
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
+use sqlx::FromRow;
+
+use crate::{AppError, AppResult};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct TestTable {
+pub struct UserDetail {
     pub id: i32,
     pub name: String,
     pub age: i32,
@@ -14,14 +16,14 @@ pub struct TestTable {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TestTableCreate {
+pub struct UserDetailCreate {
     pub name: String,
     pub age: i32,
     pub salary: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TestTableUpdate {
+pub struct UserDetailUpdate {
     pub id: i32,
     pub name: String,
     pub age: i32,
@@ -29,22 +31,11 @@ pub struct TestTableUpdate {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TestTableDelete {
+pub struct UserDetailDelete {
     pub id: i32,
 }
 
-impl TestTable {
-    pub fn new(name: String, age: i32, salary: Decimal) -> Self {
-        Self {
-            id: 0,
-            name,
-            age,
-            salary,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
-        }
-    }
-
+impl UserDetail {
     pub async fn list_all(db: &sqlx::PgPool) -> Result<Vec<Self>, sqlx::Error> {
         let lists = sqlx::query_as(
             "SELECT id, name, age, salary, created_at, updated_at FROM test_table ORDER BY id ASC",
@@ -60,7 +51,7 @@ impl TestTable {
         name: String,
         age: i32,
         salary: Decimal,
-    ) -> Result<Self, sqlx::Error> {
+    ) -> AppResult<Self> {
         let new_record = sqlx::query_as(
             "INSERT INTO test_table (name, age, salary) VALUES ($1, $2, $3) RETURNING *",
         )
@@ -79,7 +70,17 @@ impl TestTable {
         name: String,
         age: i32,
         salary: Decimal,
-    ) -> Result<Self, sqlx::Error> {
+    ) -> AppResult<Self> {
+        let existing_record: Option<Self> =
+            sqlx::query_as("SELECT * FROM test_table WHERE id = $1")
+                .bind(id)
+                .fetch_optional(db)
+                .await?;
+
+        if existing_record.is_none() {
+            return Err(AppError::UpdateError(id));
+        }
+
         let updated_record = sqlx::query_as(
             "UPDATE test_table SET name = $1, age = $2, salary = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *",
         ).bind(name)
