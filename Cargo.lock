@@ -980,10 +980,12 @@ dependencies = [
 name = "dm-front"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "dioxus",
  "dioxus-logger",
  "reqwest",
- "serde_json",
+ "rust_decimal",
+ "serde",
 ]
 
 [[package]]
