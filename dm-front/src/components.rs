@@ -72,8 +72,8 @@ pub fn Settings() -> Element {
 #[component]
 pub fn Home() -> Element {
     let mut users = use_signal(|| Vec::<UserDetail>::new());
-    // let editing = use_signal(|| HashMap::<(usize, String), bool>::new());
-    // let temp_value = use_signal(String::new);
+    let mut editing = use_signal(|| HashMap::<(usize, String), bool>::new());
+    let mut temp_value = use_signal(String::new);
 
     let future: Resource<bool> = use_resource(move || async move {
         let client = Client::new();
@@ -97,9 +97,10 @@ pub fn Home() -> Element {
                     thead {
                         tr {
                             class: "bg-gray-100",
-                            th { class: "py-2 px-4 border-b", "ID" }
-                            th { class: "py-2 px-4 border-b", "AGE" }
-                            th { class: "py-2 px-4 border-b", "SALARY" }
+                            th { class: "border-gray-300 px-4 py-2 text-left w-1/12 border-b", "ID" }
+                            th { class: "border-gray-300 px-4 py-2 text-left w-3/12 border-b", "NAME" }
+                            th { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b", "AGE" }
+                            th { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b", "SALARY" }
                         }
                     }
                     tbody {
@@ -109,9 +110,34 @@ pub fn Home() -> Element {
                                     tr {
                                         key: "{user.id}",
                                     }
-                                    td { class: "py-2 px-4 border-b","{user.id}"}
-                                    td { class: "py-2 px-4 border-b", "{user.age}" }
-                                    td { class: "py-2 px-4 border-b", "{user.salary}" }
+                                    td { class: "border-gray-300 px-4 py-2 text-left w-1/12 border-b", "{user.id}"}
+                                    td { class: "border-gray-300 px-4 py-2 text-left w-3/12 border-b","{user.name}"}
+                                    td { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b",
+                                        ondoubleclick: move |_| {
+                                            editing.write().insert((i, "age".to_string()), true);
+                                        },
+                                        {
+                                            if *editing.read().get(&(i, "age".to_string())).unwrap_or(&false) {
+                                                rsx! {
+                                                    input {
+                                                        value: "{user.age}",
+                                                        oninput:  move |e| temp_value.set(e.value().clone()),
+                                                        onblur: move |_| {
+                                                             if *editing.write().get(&(i, "age".to_string())).unwrap_or(&false) {
+                                                                users.write()[i].age = temp_value.read().parse::<i32>().unwrap();
+                                                             }
+                                                             editing.write().remove(&(i, "age".to_string())).unwrap_or(false);
+
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                rsx! {
+                                                    "{user.age}"
+                                                }
+                                            }
+                                        }}
+                                    td { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b", "{user.salary}" }
 
                                 }
                             })
