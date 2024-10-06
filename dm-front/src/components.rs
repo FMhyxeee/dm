@@ -1,8 +1,10 @@
+use std::collections::HashMap;
+
 use dioxus::prelude::*;
 use reqwest::Client;
 
-use crate::Route;
 use crate::model::UserDetail;
+use crate::Route;
 
 #[component]
 pub fn Footer() -> Element {
@@ -69,7 +71,11 @@ pub fn Settings() -> Element {
 
 #[component]
 pub fn Home() -> Element {
-    let future: Resource<Vec<UserDetail>> = use_resource(|| async move {
+    let mut users = use_signal(|| Vec::<UserDetail>::new());
+    // let editing = use_signal(|| HashMap::<(usize, String), bool>::new());
+    // let temp_value = use_signal(String::new);
+
+    let future: Resource<bool> = use_resource(move || async move {
         let client = Client::new();
         let res = client
             .get("http://127.0.0.1:3000/list_all")
@@ -78,11 +84,12 @@ pub fn Home() -> Element {
             .unwrap();
         let list = res.json().await.unwrap();
 
-        list
+        users.set(list);
+        true
     });
 
     match &*future.read_unchecked() {
-        Some(users) => {
+        Some(true) => {
             rsx! {
                 h1 { class: "text-2xl font-bold mb-4", "用户列表" }
                 table {
@@ -97,14 +104,15 @@ pub fn Home() -> Element {
                     }
                     tbody {
                         {
-                            users.iter().map(|user| {
+                            users.iter().enumerate().map(|(i, user)| {
                                 rsx! {
                                     tr {
                                         key: "{user.id}",
-                                        td { class: "py-2 px-4 border-b", "{user.id}" }
-                                        td { class: "py-2 px-4 border-b", "{user.age}" }
-                                        td { class: "py-2 px-4 border-b", "{user.salary}" }
                                     }
+                                    td { class: "py-2 px-4 border-b","{user.id}"}
+                                    td { class: "py-2 px-4 border-b", "{user.age}" }
+                                    td { class: "py-2 px-4 border-b", "{user.salary}" }
+
                                 }
                             })
                         }
@@ -112,7 +120,7 @@ pub fn Home() -> Element {
                 }
             }
         }
-        None => {
+        _ => {
             rsx! {
                 div { class: "text-center py-4", "正在加载..." }
             }

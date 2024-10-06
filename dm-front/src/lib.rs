@@ -1,10 +1,9 @@
 mod components;
 mod model;
 
-
 pub use components::*;
-pub use model::*;
 use dioxus::prelude::*;
+pub use model::*;
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 #[rustfmt::skip]
