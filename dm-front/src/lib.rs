@@ -1,9 +1,12 @@
 mod components;
 mod model;
+mod page;
 
-pub use components::*;
+use components::Footer;
 use dioxus::prelude::*;
-pub use model::*;
+
+use crate::page::Home;
+use crate::page::Settings;
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 #[rustfmt::skip]

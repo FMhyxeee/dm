@@ -1,9 +1,5 @@
-use std::collections::HashMap;
-
 use dioxus::prelude::*;
-use reqwest::Client;
 
-use crate::model::UserDetail;
 use crate::Route;
 
 #[component]
@@ -35,24 +31,27 @@ pub fn Footer() -> Element {
                 class: "flex flex-1 overflow-hidden",
 
                 // 左侧边栏
-                div {
-                    class: "w-64 bg-white shadow-lg",
-                    // 侧边栏内容
-                    div {
-                        class: "p-4",
-                        h2 { class: "text-lg font-semibold", "侧边栏菜单" },
-                        ul {
-                            class: "mt-4",
-                            li { Link { to: Route::Home{}, class: "block py-2 hover:bg-gray-100", "首页" } },
-                            li { Link { to: Route::Settings{}, class: "block py-2 hover:bg-gray-100", "设置" } },
-                            // 添加更多菜单项...
-                        }
-                    }
+                Sidebar {
+                    is_open:  true,
                 }
+                // div {
+                //     class: "w-64 bg-white shadow-lg",
+                //     // 侧边栏内容
+                //     div {
+                //         class: "p-4",
+                //         h2 { class: "text-lg font-semibold", "侧边栏菜单" },
+                //         ul {
+                //             class: "mt-4",
+                //             li { Link { to: Route::Home{}, class: "block py-2 hover:bg-gray-100", "首页" } },
+                //             li { Link { to: Route::Settings{}, class: "block py-2 hover:bg-gray-100", "设置" } },
+                //             // 添加更多菜单项...
+                //         }
+                //     }
+                // }
 
                 // 内容区域
                 div {
-                    class: "flex-1 overflow-auto p-4",
+                    class: "flex-1 overflow-auto p-4 transition-all duration-300",
                     id: "content",
                     Outlet::<Route> {}
                 }
@@ -61,94 +60,54 @@ pub fn Footer() -> Element {
     }
 }
 
-#[component]
-pub fn Settings() -> Element {
-    rsx! {
-        Link { to: Route::Home {}, "Go to counter" }
-        "Settings"
-    }
+#[derive(PartialEq, Props, Clone)]
+struct SidebarProps {
+    is_open: bool,
 }
 
 #[component]
-pub fn Home() -> Element {
-    let mut users = use_signal(|| Vec::<UserDetail>::new());
-    let mut editing = use_signal(|| HashMap::<(usize, String), bool>::new());
-    let mut temp_value = use_signal(String::new);
+fn Sidebar(props: SidebarProps) -> Element {
+    let mut is_open = use_signal(|| props.is_open);
+    rsx! {
+         // 左侧边栏
+         div {
+            class: "w-64 overflow-y-auto transition-all duration-300 transform bg-gray-900",
+            class: if *is_open.read() { "translate-x-0" } else { "-translate-x-full" },
+            // 侧边栏内容
+            nav {
+                class: "mt-10",
+                a {
+                    class: "flex items-center px-6 py-2 mt-4 text-gray-100 hover:bg-gray-700 hover:bg-opacity-25 hover:text-gray-100",
+                    href: "#",
+                    span { class: "mx-3", "Dashboard" }
+                }
+                a {
+                    class: "flex items-center px-6 py-2 mt-4 text-gray-100 hover:bg-gray-700 hover:bg-opacity-25 hover:text-gray-100",
+                    href: "#",
+                    span { class: "mx-3", "用户列表" }
+                }
+                // 添加更多菜单项...
+            }
 
-    let future: Resource<bool> = use_resource(move || async move {
-        let client = Client::new();
-        let res = client
-            .get("http://127.0.0.1:3000/list_all")
-            .send()
-            .await
-            .unwrap();
-        let list = res.json().await.unwrap();
-
-        users.set(list);
-        true
-    });
-
-    match &*future.read_unchecked() {
-        Some(true) => {
-            rsx! {
-                h1 { class: "text-2xl font-bold mb-4", "用户列表" }
-                table {
-                    class: "min-w-full bg-white border border-gray-300",
-                    thead {
-                        tr {
-                            class: "bg-gray-100",
-                            th { class: "border-gray-300 px-4 py-2 text-left w-1/12 border-b", "ID" }
-                            th { class: "border-gray-300 px-4 py-2 text-left w-3/12 border-b", "NAME" }
-                            th { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b", "AGE" }
-                            th { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b", "SALARY" }
-                        }
-                    }
-                    tbody {
-                        {
-                            users.iter().enumerate().map(|(i, user)| {
-                                rsx! {
-                                    tr {
-                                        key: "{user.id}",
-                                    }
-                                    td { class: "border-gray-300 px-4 py-2 text-left w-1/12 border-b", "{user.id}"}
-                                    td { class: "border-gray-300 px-4 py-2 text-left w-3/12 border-b","{user.name}"}
-                                    td { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b",
-                                        ondoubleclick: move |_| {
-                                            editing.write().insert((i, "age".to_string()), true);
-                                        },
-                                        {
-                                            if *editing.read().get(&(i, "age".to_string())).unwrap_or(&false) {
-                                                rsx! {
-                                                    input {
-                                                        value: "{user.age}",
-                                                        oninput:  move |e| temp_value.set(e.value().clone()),
-                                                        onblur: move |_| {
-                                                             if *editing.write().get(&(i, "age".to_string())).unwrap_or(&false) {
-                                                                users.write()[i].age = temp_value.read().parse::<i32>().unwrap();
-                                                             }
-                                                             editing.write().remove(&(i, "age".to_string())).unwrap_or(false);
-
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                rsx! {
-                                                    "{user.age}"
-                                                }
-                                            }
-                                        }}
-                                    td { class: "border-gray-300 px-4 py-2 text-right w-3/12 border-b", "{user.salary}" }
-
-                                }
-                            })
-                        }
+            button {
+                class: "absolute top-4 -right-3 bg-gray-900 text-gray-100 rounded-full p-1 focus:outline-none",
+                onclick: move |_| {
+                    let toggle = *is_open.read();
+                    *is_open.write() = !toggle;
+                },
+                svg {
+                    class: "w-4 h-4",
+                    xmlns: "http://www.w3.org/2000/svg",
+                    fill: "none",
+                    view_box: "0 0 24 24",
+                    stroke: "currentColor",
+                    path {
+                        stroke_linecap: "round",
+                        stroke_linejoin: "round",
+                        stroke_width: "2",
+                        d: if *is_open.read() { "M15 19l-7-7 7-7" } else { "M9 5l7 7-7 7" }
                     }
                 }
-            }
-        }
-        _ => {
-            rsx! {
-                div { class: "text-center py-4", "正在加载..." }
             }
         }
     }
